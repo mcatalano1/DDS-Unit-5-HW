@@ -1,0 +1,77 @@
+---
+title: "MCatalano_Livesession5assignment"
+author: "Michael Catalano"
+date: "September 27, 2018"
+output: html_document
+---
+
+GitHub URL
+https://github.com/mcatalano1/DDS-Unit-5-HW.git
+
+##1.Data Munging 
+```{r, echo = TRUE}
+#Import yob2016.txt 
+yob2016 <- read.csv(file="C:/Users/Mike/Documents/yob2016.txt", header=FALSE, sep=";")
+#Rename Columns
+colnames(yob2016) = c("Name","Gender","Amount")
+df <- data.frame(yob2016)
+head(df,10)
+#Get summary and structure of data
+summary(df)
+str(df)
+```
+
+```{r, echo = TRUE}
+#search for the name ending in yyy and remove the record
+grep("*yyy",df$Name, value = TRUE)
+new_df <- df[!grepl("*yyy", df$Name),]
+#New structure
+str(new_df)
+y2016 <- data.frame(new_df)
+#Confirm yyy entry was removed
+grep("*yyy",y2016$Name, value = TRUE)
+```
+
+##2.Data Merging 
+```{r, echo = TRUE}
+#Import yob2015.txt 
+yob2015 <- read.csv(file="C:/Users/Mike/Documents/yob2015.txt", header=FALSE, sep=",")
+colnames(yob2015) = c("Name","Gender","Amount")
+y2015 <- data.frame(yob2015)
+#Display last 10rows of data
+tail(y2015,10)
+```
+
+###Something interesting about the last 10 rows, 5 kids had the name Zolton
+
+```{r, echo = TRUE}
+#Merge the two tables
+final <- merge(y2015,y2016,by="Name")
+#Check for NA values in each
+grep("NA",final$Amount.x, value = TRUE)
+grep("NA",final$Amount.y, value = TRUE)
+#Add amounts together from both tables
+final <- cbind(final,Total=final$Amount.x+final$Amount.y)
+#Sort descending by Amount column, also show the amount of people given popular names
+final <- final[order(-final$Total),]
+final$Gender.y <- NULL
+final$Amount.x <- NULL
+final$Amount.y <- NULL
+colnames(final) = c("Name","Gender","Total")
+head(final,10)
+```
+
+##3.Data Summary 
+
+```{r, echo = TRUE}
+#Split out a dataframe by girls only, sort by top 10 most popular
+girls <- subset(final, final$Gender == "F")
+girls <- girls[order(-girls$Total),]
+girls$Gender <- NULL
+girls <- girls[1:10,]
+girls
+
+#Write out to CSV
+write.csv(girls, file = "C:/Users/Mike/Documents/girls_summary.csv", row.names = FALSE)
+```
+
